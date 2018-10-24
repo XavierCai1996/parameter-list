@@ -16,7 +16,7 @@ Manage parameters in a unified way in C++.
 
 1.Copy the folder `./src/` to your projects.
 
-2.Include the header file `./src/p.h` in your codes.
+2.Include the header file `./src/parameter-list.h` in your codes.
 
 ## Contact me
 
