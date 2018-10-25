@@ -7,21 +7,26 @@
 #include <ostream>
 #include "simple-assert.h"
 
+#include <vector>
+#include <stdarg.h>
+
 class ParameterList {
 private:
-	class Item {
-	private:
-		Parameter param;
+	template <typename _T>
+	class ItemTemplate {
+	public:
+		_T param;
 		std::string key;
-		std::string describe;
+		std::string description;
 		
-		Item(const Parameter &_param, const std::string _key, const std::string _describe);
+		ItemTemplate<_T>(const _T &_param, const std::string _key, const std::string _description)
+			: param(_param), key(_key), description(_description)
+		{ }
 
-		friend class ParameterList;
-		friend std::ostream& operator << (std::ostream &os, const ParameterList::Item &item);
-	};//class Item
-	friend std::ostream& operator << (std::ostream &os, const ParameterList::Item &item); //this function need to access the private class Item
-
+		virtual std::string Print();
+	};//class ItemTemplate
+	
+	typedef ItemTemplate<Parameter> Item;
 	typedef std::map<std::string, Item*> ListMap; //Item* for reducing overhead when using std::map and std::pair
 	ListMap m_list; //the list
 
@@ -35,15 +40,15 @@ public:
 
 	//Add parameter
 	template <typename _T>
-	ParameterList& Add(const std::string key, const _T& v, const std::string describe = "(no describe)")
+	ParameterList& Add(const std::string key, const _T& v, const std::string description = "(no description)")
 	{
-		bool result = m_list.insert(std::make_pair(key, new Item(Parameter::Create(v), key, describe))).second;
+		bool result = m_list.insert(std::make_pair(key, new Item(Parameter::Create(v), key, description))).second;
 		if(!result)
 		{
 			ListMap::iterator find = m_list.find(key);
 			if(find != m_list.end())
 			{
-				ASSERT_WITH_MSG(false, key << " is already exsit : " << *(find->second));
+				ASSERT_WITH_MSG(false, key << " is already exsit : " << find->second->Print());
 			}
 			ASSERT_WITH_MSG(false, "unkown dump when Add (maybe memory is not enough)");
 		}
@@ -63,15 +68,49 @@ public:
 
 	//Get parameter by key
 	Parameter& Get(const std::string key);
+	//const version
+	Parameter GetConst(const std::string key) const;
 
 	//Remove parameter by key
 	ParameterList& Remove(const std::string key);
 
+	//Inquire if the key is in the list
+	bool Have(const std::string key) const;
+
 	//Get parameter information as string
 	std::string List() const;
 
-};//class ParameterList
 
-std::ostream& operator << (std::ostream &os, const ParameterList::Item &item);
+	//code block below is to perform Merge
+	//Merge is usually used in passing ParameterList as fucntion arguments
+private:
+	typedef ItemTemplate<TypeVerify> RequireItem;
+	bool m_isRequireHelp; //indicate if is requiring help when using Merge, true means print the parameters that are required
+
+public:
+	class RequireList {
+	private:
+		std::vector<RequireItem> m_requires;
+	public:
+		template <typename _T>
+		RequireList& Add(const std::string key, const std::string description = "(no description)")
+		{
+			m_requires.push_back(RequireItem(TypeVerify::Create<_T>(), key, description));
+			return *this;
+		}
+
+		RequireItem Get(unsigned int i) const;
+		std::size_t Size() const;
+	};//class RequireList
+	
+	//Merge another list to this list
+	//  rule 1. add new key to this list
+	//  rule 2. replace the value for same key without type checking, and the description will not be changed
+	ParameterList& Merge(const ParameterList& o, const RequireList& requires = RequireList());
+
+	//pass this list as argument to functions which is coding in framework, then the parameters that are required will be printed
+	static ParameterList Help();
+	
+};//class ParameterList
 
 #endif //#ifndef PARAMETER_LIST_H
