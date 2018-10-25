@@ -56,7 +56,8 @@ public:
 	Parameter& operator = (const _T &v)
 	{
 		TypeVerifyCheck<_T>();
-		*(_T*)m_value = v;
+		FunctionStorage::Delete(m_value, m_verify);
+		m_value = FunctionStorage::Copy((const FunctionStorage::Pointer)&v, m_verify);
 		return *this;
 	} 
 
