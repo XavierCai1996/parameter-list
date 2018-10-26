@@ -53,11 +53,11 @@ void FunctionPassParameter(const Parameter &param)
 void ParameterExampleFlow()
 {
 	//using constructor of Identity
-	Parameter para1 = Parameter::Create(Identity(1));
+	Parameter para1(Identity(1));
 
 	//using object of Identity
 	Identity id(2);
-	Parameter para2 = Parameter::Create(id);
+	Parameter para2(id);
 
 	//print the type of value in parameter
 	std::cout << "Value type is [" << para1.GetName() << "]" << std::endl;
