@@ -33,21 +33,13 @@ public:
 	void SetId(int id) {
 		*m_id = id;
 	}
-
-	friend std::ostream& operator << (std::ostream &os, const Identity &id);
 };
-
-std::ostream& operator << (std::ostream &os, const Identity &id)
-{
-	os << id.GetId();
-}
 
 
 void FunctionPassIdentity(const Identity &id)
 {
 	std::cout << "@" << __FUNCTION__ << " ID = " << id.GetId() << std::endl;
 }
-
 
 
 void FunctionPassParameter(const Parameter &param)
