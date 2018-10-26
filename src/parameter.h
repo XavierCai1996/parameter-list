@@ -60,6 +60,17 @@ public:
 		m_value = FunctionStorage::Copy((const FunctionStorage::Pointer)&v, m_verify);
 		return *this;
 	} 
+	
+	//Get TypeVerify of parameter
+	TypeVerify GetTypeVerify() const;
+	//compare the type to another parameter
+	bool CompareType(const Parameter &o) const;
+	//compare the type to another parameter
+	template <typename _T>
+	bool CompareType() const
+	{
+		return m_verify == TypeVerify::Create<_T>();
+	}
 
 };//Parameter
 
