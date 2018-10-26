@@ -44,6 +44,11 @@ private:
 	
 public:
 	template <class _T>
+	TypeVerify(const _T &o)
+		: m_verify(GetVerify<_T>()), m_name(GetName<_T>())
+	{ }
+	
+	template <class _T>
 	static TypeVerify Create()
 	{
 		return TypeVerify(GetVerify<_T>(), GetName<_T>());

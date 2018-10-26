@@ -1,9 +1,5 @@
 #include "parameter.h"
 
-Parameter::Parameter(const TypeVerify &verify, const FunctionStorage::Pointer value)
-	: m_value(value), m_verify(verify)
-{ }
-
 Parameter::~Parameter()
 {
 	FunctionStorage::Delete(m_value, m_verify);

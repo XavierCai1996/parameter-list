@@ -9,8 +9,6 @@ private:
 	TypeVerify m_verify;
 	FunctionStorage::Pointer m_value;
 
-	Parameter(const TypeVerify &verify, const FunctionStorage::Pointer value);
-
 	template <typename _T>
 	bool TypeVerifyCheck() const
 	{
@@ -22,26 +20,15 @@ public:
 	~Parameter();
 	Parameter(const Parameter &o);
 
-	//you dont need to call this function
-	/*
 	template <typename _T>
-	_T GetValue() const
-	{
-		TypeVerifyCheck<_T>();
-		return *(_T*)m_value;
-	}
-	*/
-
-	const char* GetName() const;
-
-	//Create a parameter
-	template <typename _T>
-	static Parameter Create(const _T &v)
+	Parameter(const _T &v)
+		: m_verify(v)
 	{
 		FunctionStorage::Store<_T>();
-		TypeVerify tv = TypeVerify::Create<_T>();
-		return Parameter(tv, FunctionStorage::Copy((const FunctionStorage::Pointer)&v, tv));
+		m_value = FunctionStorage::Copy((const FunctionStorage::Pointer)&v, m_verify);
 	}
+
+	const char* GetName() const;
 
 	//for converting Parameter to the ValueType
 	template <typename _T>
@@ -60,7 +47,7 @@ public:
 		m_value = FunctionStorage::Copy((const FunctionStorage::Pointer)&v, m_verify);
 		return *this;
 	} 
-	
+
 	//Get TypeVerify of parameter
 	TypeVerify GetTypeVerify() const;
 	//compare the type to another parameter
@@ -71,6 +58,7 @@ public:
 	{
 		return m_verify == TypeVerify::Create<_T>();
 	}
+	
 
 };//Parameter
 

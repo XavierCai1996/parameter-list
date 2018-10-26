@@ -3,10 +3,12 @@
 
 #include "parameter.h"
 #include <map>
-#include <vector>
 #include <string>
 #include <ostream>
 #include "simple-assert.h"
+
+#include <vector>
+//#include <stdarg.h>
 
 class ParameterList {
 private:
@@ -40,7 +42,7 @@ public:
 	template <typename _T>
 	ParameterList& Add(const std::string key, const _T& v, const std::string description = "(no description)")
 	{
-		bool result = m_list.insert(std::make_pair(key, new Item(Parameter::Create(v), key, description))).second;
+		bool result = m_list.insert(std::make_pair(key, new Item(Parameter(v), key, description))).second;
 		if(!result)
 		{
 			ListMap::iterator find = m_list.find(key);
