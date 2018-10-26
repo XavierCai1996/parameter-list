@@ -79,7 +79,7 @@ void ParameterExampleFlow()
 
 	//[Caution!] when you call the copy constrctor like below, be careful!
 	//  create a parameter with value = int(1)
-	Parameter intParam = Parameter::Create(1);
+	Parameter intParam(1);
 	//  you can call the copy constructor as below
 	int i(intParam); //like this
 	std::cout << "Call copy constructor int = " << int(intParam) << std::endl; //or like this
