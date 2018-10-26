@@ -148,7 +148,12 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList:
 		if(!o.Have(requires.Get(i).key))
 		{
 			result = false;
-			ASSERT_WITH_MSG(false, "parameter key " << requires.Get(i).key << " is required!");
+			ASSERT_WITH_MSG(false, "parameter key [" << requires.Get(i).key << "] is required!");
+		}
+		else if(o.GetConst(requires.Get(i).key).GetTypeVerify() != requires.Get(i).param)
+		{
+			result = false;
+			ASSERT_WITH_MSG(false, "the type of parameter with key [" << requires.Get(i).key << "] should be [" << requires.Get(i).param.GetName() << "]");
 		}
 	}
 
@@ -159,6 +164,8 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList:
 		{
 			if(Have(ite->first)) //replace
 			{
+				bool typeCheck = Get(ite->first).CompareType(ite->second->param);
+				ASSERT_WITH_MSG(typeCheck, "the type of parameter with key[" << ite->first << "] should be [" << Get(ite->first).GetName() << "]");
 				Get(ite->first) = ite->second->param;
 			}
 			else //add
