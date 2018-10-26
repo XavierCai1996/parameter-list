@@ -17,3 +17,13 @@ const char* Parameter::GetName() const
 {
 	return m_verify.GetName();
 }
+
+TypeVerify Parameter::GetTypeVerify() const
+{
+	return m_verify;
+}
+
+bool Parameter::CompareType(const Parameter &o) const
+{
+	return m_verify == o.m_verify;
+}
