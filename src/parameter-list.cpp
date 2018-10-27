@@ -72,7 +72,7 @@ std::string ParameterList::ListRelated(const std::string key, unsigned int maxDi
 	bool first = true;
 	for(ListMap::const_iterator ite = m_list.begin(); ite != m_list.end(); ite++)
 	{
-		if(abs(ite->first.length() - len) <= maxDistance)
+		if((unsigned int)abs((int)(ite->first.length()) - len) <= maxDistance)
 		{
 			unsigned int editDistance = EditDistance::Calculate(key, ite->first);
 			if(editDistance <= maxDistance)
