@@ -42,7 +42,7 @@ FunctionStorage::Pointer FunctionStorage::Copy(const FunctionStorage::Pointer o,
 	return impls.GetCopyImpl()(o);
 }
 
-void FunctionStorage::Delete(FunctionStorage::Pointer o, const TypeVerify &tv)
+void FunctionStorage::Delete(FunctionStorage::Pointer &o, const TypeVerify &tv)
 {
 	const FunctionStorage::Impls& impls = GetInstance()->GetImpls(tv);
 	return impls.GetDeleteImpl()(o);
