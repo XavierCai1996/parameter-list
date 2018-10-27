@@ -6,7 +6,15 @@
 #if defined(__linux__)
 	#include <cxxabi.h>
 #else
-	#define abi::__cxa_demangle(type, p2, p3, p4) (type)
+	class abi
+	{
+	public:
+		virtual ~abi() = 0;
+		static const char* __cxa_demangle(const char* str, void* p1, void* p2, void* p3)
+		{
+			return str;
+		}
+	};
 #endif //#if defined(__linux__)
 
 #if __cplusplus <= 199711L //C++11 is not supported
