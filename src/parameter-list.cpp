@@ -19,7 +19,13 @@ ParameterList::ParameterList()
 { }
 
 ParameterList::ParameterList(const ParameterList& o)
+	: m_isRequireHelp(false)
 {
+	if(o.m_isRequireHelp)
+	{
+		ASSERT_WITH_MSG(false, "can not copy the ParameterList::Help");
+	}
+		
 	for(ListMap::const_iterator ite = o.m_list.begin(); ite != o.m_list.end(); ite++)
 	{
 		m_list.insert(std::make_pair(ite->first, new Item(*(ite->second))));
@@ -31,6 +37,7 @@ ParameterList::~ParameterList()
 	for(ListMap::iterator ite = m_list.begin(); ite != m_list.end(); ite++)
 	{
 		delete ite->second;
+		ite->second = NULL;
 	}
 }
 
@@ -210,7 +217,7 @@ std::size_t ParameterList::RequireList::Size() const
 	return m_requires.size();
 }
 
-ParameterList ParameterList::Help()
+const ParameterList ParameterList::Help()
 {
 	static ParameterList help;
 	help.m_isRequireHelp = true;
