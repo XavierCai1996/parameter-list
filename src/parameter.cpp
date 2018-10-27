@@ -14,6 +14,14 @@ const char* Parameter::GetName() const
 	return m_verify.GetName();
 }
 
+Parameter& Parameter::operator = (const Parameter &o)
+{
+	FunctionStorage::Delete(m_value, m_verify);
+	m_value = FunctionStorage::Copy(o.m_value, o.m_verify);
+	m_verify = o.m_verify;
+	return *this;
+}
+
 TypeVerify Parameter::GetTypeVerify() const
 {
 	return m_verify;
