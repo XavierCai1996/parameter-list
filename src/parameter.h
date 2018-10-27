@@ -47,6 +47,8 @@ public:
 		m_value = FunctionStorage::Copy((const FunctionStorage::Pointer)&v, m_verify);
 		return *this;
 	} 
+	
+	Parameter& operator = (const Parameter &o);
 
 	//Get TypeVerify of parameter
 	TypeVerify GetTypeVerify() const;
