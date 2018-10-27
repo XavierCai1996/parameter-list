@@ -26,14 +26,15 @@ private:
 
 	//for freeing
 	template<class _T>
-	static void DeleteImpl(Pointer o)
+	static void DeleteImpl(Pointer &o)
 	{
 		delete (_T*)(o);
+		o = NULL;
 	}
 
 	//typedef to simplify the codes
 	typedef Pointer (*CopyFunction)(const Pointer);
-	typedef void (*DeleteFunction)(Pointer);
+	typedef void (*DeleteFunction)(Pointer&);
 
 	//each type will have multiple functions, so we need a union
 	class Impls {
@@ -76,7 +77,7 @@ public:
 	//call copy function by TypeVerify
 	static Pointer Copy(const Pointer o, const TypeVerify &tv);
 	//call delete function by TypeVerify
-	static void Delete(Pointer o, const TypeVerify &tv);
+	static void Delete(Pointer &o, const TypeVerify &tv);
 
 	//call copy function by specify type _T
 	template <typename _T>
@@ -87,7 +88,7 @@ public:
 
 	//call delete function by specify type _T
 	template <typename _T>
-	static void Delete(Pointer o)
+	static void Delete(Pointer &o)
 	{
 		return Delete(o, TypeVerify::Create<_T>());
 	}
