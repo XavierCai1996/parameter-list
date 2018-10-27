@@ -217,7 +217,7 @@ std::size_t ParameterList::RequireList::Size() const
 	return m_requires.size();
 }
 
-const ParameterList ParameterList::Help()
+const ParameterList& ParameterList::Help()
 {
 	static ParameterList help;
 	help.m_isRequireHelp = true;
