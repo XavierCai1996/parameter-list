@@ -109,7 +109,7 @@ public:
 	ParameterList& Merge(const ParameterList& o, const RequireList& requires = RequireList());
 
 	//pass this list as argument to functions which is coding in framework, then the parameters that are required will be printed
-	const static &ParameterList Help();
+	const static ParameterList& Help();
 	
 };//class ParameterList
 
