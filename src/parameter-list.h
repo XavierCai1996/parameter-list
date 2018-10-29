@@ -4,11 +4,8 @@
 #include "parameter.h"
 #include <map>
 #include <string>
-#include <ostream>
 #include "simple-assert.h"
-
 #include <vector>
-//#include <stdarg.h>
 
 class ParameterList {
 private:
@@ -88,6 +85,7 @@ private:
 	bool m_isRequireHelp; //indicate if is requiring help when using Merge, true means print the parameters that are required
 
 public:
+	//for function Merge
 	class RequireList {
 	private:
 		std::vector<RequireItem> m_requires;
@@ -102,14 +100,38 @@ public:
 		RequireItem Get(unsigned int i) const;
 		std::size_t Size() const;
 	};//class RequireList
+
+	//for funciotn Merge
+	class MergeMode {
+	private:
+		char m_mode;
+		bool IsOne(unsigned int index) const;
+		static char GetOne(unsigned int index);
+		bool IsReplace() const;
+		bool IsGreedy() const;
+		friend class ParameterList;
+		
+	public:
+		MergeMode(char mode);
+		static char replace, retain; //a mode set
+		static char greedy, conservative; // a mode set
+	};//class MergeMode
 	
-	//Merge another list to this list
-	//  rule 1. add new key to this list
-	//  rule 2. replace the value for same key with type checking, and the description will not be changed
-	ParameterList& Merge(const ParameterList& o, const RequireList& requires = RequireList());
+	/*
+	 *  Merge another list to this list
+	 *    Rule of mode[greedy/conservative](default to greedy) :
+	 *      if a specific key which appeared in another list but not this list
+	 *      add/ignore it;
+	 *    Rule of mode[replace/retain](default to replace) :
+	 *  	if a specific key which appeared both in two lists
+	 *      [replace:]replace the value for the same key with type checking, and the description will not be changed
+	 *      [retain:]ignore it;
+	*/
+	ParameterList& Merge(const ParameterList& o, const RequireList& requires, const MergeMode& mode = MergeMode::replace|MergeMode::greedy);
+	ParameterList& Merge(const ParameterList& o, const MergeMode& mode = MergeMode::replace|MergeMode::greedy);
 
 	//pass this list as argument to functions which is coding in framework, then the parameters that are required will be printed
-	const static ParameterList& Help();
+	static const ParameterList& Help();
 	
 };//class ParameterList
 

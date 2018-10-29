@@ -1,5 +1,6 @@
 #include "edit-distance.h"
 #include <vector>
+#include <stdlib.h>
 
 EditDistance::EditDistance()
 { }
@@ -51,4 +52,22 @@ unsigned int EditDistance::Calculate(const std::string& s1, const std::string& s
 		}
 	}
 	return distance[len1][len2] + (captrans ? 1 : 0);
+}
+
+std::vector<std::string> EditDistance::Related(const std::string& key, const std::vector<std::string>& strs, unsigned int maxDistance)
+{
+	std::vector<std::string> returns;
+	unsigned int len = key.length();
+	for(std::vector<std::string>::const_iterator ite = strs.begin(); ite != strs.end(); ite++)
+	{
+		if((unsigned int)abs((int)(ite->length()) - (int)len) <= maxDistance)
+		{
+			unsigned int editDistance = EditDistance::Calculate(key, *ite);
+			if(editDistance <= maxDistance)
+			{
+				returns.push_back(*ite);
+			}
+		}
+	}
+	return returns;
 }

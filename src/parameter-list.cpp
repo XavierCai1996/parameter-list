@@ -25,7 +25,7 @@ ParameterList::ParameterList(const ParameterList& o)
 	{
 		ASSERT_WITH_MSG(false, "can not copy the ParameterList::Help");
 	}
-		
+
 	for(ListMap::const_iterator ite = o.m_list.begin(); ite != o.m_list.end(); ite++)
 	{
 		m_list.insert(std::make_pair(ite->first, new Item(*(ite->second))));
@@ -74,23 +74,20 @@ Parameter ParameterList::GetConst(const std::string key) const
 
 std::string ParameterList::ListRelated(const std::string key, unsigned int maxDistance) const
 {
-	std::ostringstream oss;
-	int len = key.length();
-	bool first = true;
+	std::vector<std::string> strs;
 	for(ListMap::const_iterator ite = m_list.begin(); ite != m_list.end(); ite++)
 	{
-		if((unsigned int)abs((int)(ite->first.length()) - len) <= maxDistance)
+		strs.push_back(ite->first);
+	}
+	strs = EditDistance::Related(key, strs);
+	
+	std::ostringstream oss;
+	if(strs.size() > 0)
+	{
+		oss << "related parameters (with max edit distance = " << maxDistance << ") : \n";
+		for(unsigned int i = 0; i < strs.size(); i++)
 		{
-			unsigned int editDistance = EditDistance::Calculate(key, ite->first);
-			if(editDistance <= maxDistance)
-			{
-				if(first)
-				{
-					first = false;
-					oss << "related parameters (with max edit distance = " << maxDistance << ") : \n";
-				}
-				oss << " " << ite->second->Print() << "\n";
-			}
+			oss << " " << m_list.find(strs[i])->second->Print() << "\n";
 		}
 	}
 	return oss.str();
@@ -114,7 +111,45 @@ std::string ParameterList::List() const
 	return oss.str();
 }
 
-ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList::RequireList& requires)
+ParameterList::MergeMode::MergeMode(char mode)
+	: m_mode(mode)
+{ }
+
+bool ParameterList::MergeMode::IsOne(unsigned int index) const
+{
+	ASSERT_WITH_MSG(index >= 0 && index < sizeof(char) * 8, "invalid index");
+	return (m_mode >> index) & 0x01;
+}
+
+char ParameterList::MergeMode::GetOne(unsigned int index)
+{
+	ASSERT_WITH_MSG(index >= 0 && index < sizeof(char) * 8, "invalid index");
+	char c = '\0' | (0x01 << index);
+	return c;
+}
+
+bool ParameterList::MergeMode::IsReplace() const
+{
+	return !IsOne(0);
+}
+
+bool ParameterList::MergeMode::IsGreedy() const
+{
+	return !IsOne(1);
+}
+
+char ParameterList::MergeMode::replace = '\0'; //default value should be 0
+char ParameterList::MergeMode::retain = GetOne(0);
+
+char ParameterList::MergeMode::greedy = '\0'; //default value should be 0
+char ParameterList::MergeMode::conservative = GetOne(1);
+
+ParameterList& ParameterList::Merge(const ParameterList& o, const MergeMode& mode)
+{
+	return Merge(o, RequireList(), mode);
+}
+
+ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList::RequireList& requires, const MergeMode& mode)
 {
 	//print help information if need
 	if(o.m_isRequireHelp)
@@ -147,20 +182,29 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList:
 		}
 		ASSERT_WITH_MSG(false, "print help information in function ParameterList::" << __FUNCTION__);
 	}
+
+	bool isReplace = mode.IsReplace();
+	bool isGreedy = mode.IsGreedy();
+	std::map<std::string, bool> keys;//for mode conservative
 	
 	//requires check
 	bool result = true;
 	for(std::size_t i = 0; i < requires.Size(); i++)
 	{
-		if(!o.Have(requires.Get(i).key))
+		std::string key = requires.Get(i).key;
+		if(!o.Have(key))
 		{
 			result = false;
 			ASSERT_WITH_MSG(false, "parameter key [" << requires.Get(i).key << "] is required!");
 		}
-		else if(o.GetConst(requires.Get(i).key).GetTypeVerify() != requires.Get(i).param)
+		else if(o.GetConst(key).GetTypeVerify() != requires.Get(i).param)
 		{
 			result = false;
 			ASSERT_WITH_MSG(false, "the type of parameter with key [" << requires.Get(i).key << "] should be [" << requires.Get(i).param.GetName() << "]");
+		}
+		if(!isGreedy)
+		{
+			keys[key] = true;
 		}
 	}
 
@@ -169,7 +213,7 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList:
 	{
 		for(ListMap::const_iterator ite = o.m_list.begin(); ite != o.m_list.end(); ite++)
 		{
-			if(Have(ite->first)) //replace
+			if(Have(ite->first) && isReplace) //replace
 			{
 				bool typeCheck = Get(ite->first).CompareType(ite->second->param);
 				ASSERT_WITH_MSG(typeCheck, "the type of parameter with key[" << ite->first << "] should be [" << Get(ite->first).GetName() << "]");
@@ -177,35 +221,16 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList:
 			}
 			else //add
 			{
-				m_list.insert(std::make_pair(ite->first, new Item(*(ite->second))));
+				if(isGreedy || (keys.find(ite->first) != keys.end()))
+				{
+					m_list.insert(std::make_pair(ite->first, new Item(*(ite->second))));
+				}
 			}
 		}
 	}
 	
 	return *this;
 }
-
-
-/* //use for ParameterList::RequireList("str1", "str2", "strN", NULL)
-   //example: list.Merge(inList, ParameterList::RequireList("a", "b", NULL));
-ParameterList::RequireList::RequireList(const char* str)
-{
-	m_strings.push_back(str);
-}
-
-ParameterList::RequireList::RequireList(const char* str1, const char* str2, ...)
-{
-	m_strings.push_back(str1);
-	va_list argv;
-	va_start(argv, str2);
-	while(str2 != NULL)
-	{
-		m_strings.push_back(str2);
-		str2 = va_arg(argv, const char*);
-	}
-	va_end(argv);
-}
-*/
 
 ParameterList::RequireItem ParameterList::RequireList::Get(unsigned int i) const
 {
