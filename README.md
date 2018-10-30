@@ -27,6 +27,9 @@ The current versions and compile options for the dependencies are:
 * make 3.81
 * cmake 2.8.0
 
+### Windows
+* visual studio 2012
+
 ## Contact me
 
 Contact me on my mail address cxw39@foxmail.com
