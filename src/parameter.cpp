@@ -6,7 +6,7 @@ Parameter::~Parameter()
 }
 
 Parameter::Parameter(const Parameter &o)
-	: m_value(FunctionStorage::Copy(o.m_value, o.m_verify)), m_verify(o.m_verify)
+	: m_verify(o.m_verify), m_value(FunctionStorage::Copy(o.m_value, o.m_verify))
 { }
 
 const char* Parameter::GetName() const
