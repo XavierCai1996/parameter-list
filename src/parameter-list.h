@@ -12,6 +12,7 @@ private:
 	template <typename _T>
 	class ItemTemplate {
 	public:
+		virtual ItemTemplate() { }
 		_T param;
 		std::string key;
 		std::string description;
