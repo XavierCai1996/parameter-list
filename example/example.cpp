@@ -82,6 +82,8 @@ void ParameterExampleFlow()
 	Parameter intParam(1);
 	//  you can call the copy constructor as below
 	int i(intParam); //like this
+	int j = (int)intParam; //or like this
+	std::cout << "i = " << i << " j = " << j << std::endl;
 	std::cout << "Call copy constructor int = " << int(intParam) << std::endl; //or like this
 	/*  
 	 *but you can not call the copy constructor of Identity like :
