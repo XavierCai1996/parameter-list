@@ -34,6 +34,7 @@ private:
 public:
 	ParameterList();
 	ParameterList(const ParameterList& o); //Copy Item* in this function
+	ParameterList& operator = (const ParameterList& o);
 	~ParameterList(); //delete Item* in this function
 
 	//Add parameter
@@ -67,7 +68,7 @@ public:
 	//Get parameter by key
 	Parameter& Get(const std::string key);
 	//const version
-	Parameter GetConst(const std::string key) const;
+	const Parameter& Get(const std::string key) const;
 
 	//Remove parameter by key
 	ParameterList& Remove(const std::string key);
@@ -77,6 +78,9 @@ public:
 
 	//Get parameter information as string
 	std::string List() const;
+	
+	//Clear all parameters in list
+	void Clear();
 
 
 	//code block below is to perform Merge
@@ -122,11 +126,11 @@ public:
 	 *  Merge another list to this list
 	 *    Rule of mode[greedy/conservative](default to greedy) :
 	 *      if a specific key which appeared in another list but not this list
-	 *      add/ignore it;
+	 *      add/ignore it, in addition, if the key is included in the require list, add it;
 	 *    Rule of mode[replace/retain](default to replace) :
 	 *  	if a specific key which appeared both in two lists
 	 *      [replace:]replace the value for the same key with type checking, and the description will not be changed
-	 *      [retain:]ignore it;
+	 *      [retain:]ignore it if it not included in the require list, otherwise, replace it;
 	*/
 	ParameterList& Merge(const ParameterList& o, const RequireList& requires, const MergeMode& mode = MergeMode::replace|MergeMode::greedy);
 	ParameterList& Merge(const ParameterList& o, const MergeMode& mode = MergeMode::replace|MergeMode::greedy);
