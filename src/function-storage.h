@@ -38,8 +38,7 @@ private:
 
 	//each type will have multiple functions, so we need a union
 	class Impls {
-	private:
-		friend class FunctionStorage;
+	public:
 		Impls(CopyFunction cImpl, DeleteFunction dImpl);
 
 		CopyFunction copyImpl; //copy handle
@@ -54,6 +53,7 @@ private:
 		const CopyFunction GetCopyImpl() const; //interface to get the copy handle
 		const DeleteFunction GetDeleteImpl() const; //interface to get the delete handle
 	};
+	friend class Parameter;
 
 	std::map<TypeVerify, Impls> m_storage; //the storage
 	const Impls& GetImpls(const TypeVerify &tv) const; //find functions for a specific type
@@ -92,7 +92,6 @@ public:
 	{
 		return Delete(o, TypeVerify::Create<_T>());
 	}
-
 
 };//class FunctionStorage
 
