@@ -32,8 +32,8 @@ const FunctionStorage::Impls& FunctionStorage::GetImpls(const TypeVerify &tv) co
 
 FunctionStorage* FunctionStorage::GetInstance()
 {
-	static FunctionStorage* instance = new FunctionStorage();
-	return instance;
+	static FunctionStorage instance;
+	return &instance;
 }
 
 FunctionStorage::Pointer FunctionStorage::Copy(const FunctionStorage::Pointer o, const TypeVerify &tv)
