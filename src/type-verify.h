@@ -48,7 +48,7 @@ private:
 		return abi::__cxa_demangle(typeid(_T).name(), NULL, NULL, NULL);
 	}
 
-	TypeVerify(Verify verify, const char* name);
+	TypeVerify(Verify verify, char* name);
 	
 public:
 	TypeVerify(const TypeVerify& o);
