@@ -4,7 +4,6 @@
 
 #include <sstream>
 
-
 template <typename _T>
 std::string ParameterList::ItemTemplate<_T>::Print()
 {
@@ -19,26 +18,28 @@ ParameterList::ParameterList()
 { }
 
 ParameterList::ParameterList(const ParameterList& o)
-	: m_isRequireHelp(false)
 {
+	*this = o;
+}
+
+ParameterList& ParameterList::operator = (const ParameterList& o)
+{
+	Clear();
 	if(o.m_isRequireHelp)
 	{
 		ASSERT_WITH_MSG(false, "can not copy the ParameterList::Help");
 	}
-
+	m_isRequireHelp = o.m_isRequireHelp;
 	for(ListMap::const_iterator ite = o.m_list.begin(); ite != o.m_list.end(); ite++)
 	{
 		m_list.insert(std::make_pair(ite->first, new Item(*(ite->second))));
 	}
+	return *this;
 }
 
 ParameterList::~ParameterList()
 {
-	for(ListMap::iterator ite = m_list.begin(); ite != m_list.end(); ite++)
-	{
-		delete ite->second;
-		ite->second = NULL;
-	}
+	Clear();
 }
 
 ParameterList& ParameterList::Remove(const std::string key)
@@ -64,7 +65,7 @@ Parameter& ParameterList::Get(const std::string key)
 	return find->second->param;
 }
 
-Parameter ParameterList::GetConst(const std::string key) const
+const Parameter& ParameterList::Get(const std::string key) const
 {
 	ListMap::const_iterator find = m_list.find(key);
 	bool result = find != m_list.end();
@@ -111,6 +112,16 @@ std::string ParameterList::List() const
 	return oss.str();
 }
 
+void ParameterList::Clear()
+{
+	for(ListMap::iterator ite = m_list.begin(); ite != m_list.end(); ite++)
+	{
+		delete ite->second;
+		ite->second = NULL;
+	}
+	m_list.clear();
+}
+
 ParameterList::MergeMode::MergeMode(char mode)
 	: m_mode(mode)
 { }
@@ -151,7 +162,7 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const MergeMode& mod
 
 ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList::RequireList& requires, const MergeMode& mode)
 {
-	//print help information if need
+	//print help information if needed
 	if(o.m_isRequireHelp)
 	{
 		std::size_t defaultN = m_list.size();
@@ -197,7 +208,7 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList:
 			result = false;
 			ASSERT_WITH_MSG(false, "parameter key [" << requires.Get(i).key << "] is required!");
 		}
-		else if(o.GetConst(key).GetTypeVerify() != requires.Get(i).param)
+		else if(o.Get(key).GetTypeVerify() != requires.Get(i).param)
 		{
 			result = false;
 			ASSERT_WITH_MSG(false, "the type of parameter with key [" << requires.Get(i).key << "] should be [" << requires.Get(i).param.GetName() << "]");
@@ -213,17 +224,25 @@ ParameterList& ParameterList::Merge(const ParameterList& o, const ParameterList:
 	{
 		for(ListMap::const_iterator ite = o.m_list.begin(); ite != o.m_list.end(); ite++)
 		{
-			if(Have(ite->first) && isReplace) //replace
+			if(Have(ite->first))
 			{
-				bool typeCheck = Get(ite->first).CompareType(ite->second->param);
-				ASSERT_WITH_MSG(typeCheck, "the type of parameter with key[" << ite->first << "] should be [" << Get(ite->first).GetName() << "]");
-				Get(ite->first) = ite->second->param;
-			}
-			else //add
-			{
-				if(isGreedy || (keys.find(ite->first) != keys.end()))
+				if(isReplace || (keys.find(ite->first) != keys.end())) //replace
 				{
-					m_list.insert(std::make_pair(ite->first, new Item(*(ite->second))));
+					bool typeCheck = Get(ite->first).CompareType(ite->second->param);
+					ASSERT_WITH_MSG(typeCheck, "the type of parameter with key[" << ite->first << "] should be [" << Get(ite->first).GetName() << "]");
+					Get(ite->first) = ite->second->param;
+				}
+			}
+			else
+			{
+				if(isGreedy || (keys.find(ite->first) != keys.end())) //add
+				{
+					Item* item = new Item(*(ite->second));
+					if(!m_list.insert(std::make_pair(ite->first, item)).second)
+					{
+						delete item;
+						ASSERT_WITH_MSG(false, "unexcepted error");
+					}
 				}
 			}
 		}
